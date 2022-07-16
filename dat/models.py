@@ -22,7 +22,9 @@ class Constants(BaseConstants):
 
 # Defining what configs to be saved
 class Subsession(BaseSubsession):
-  pass
+    treatment = models.StringField(choices=['ButtonA', 'ButtonB', 'NoButton'])
+    def creating_session(self):
+        self.treatment = self.session.config['select_items']
 
 class Group(BaseGroup):
     pass

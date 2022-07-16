@@ -41,19 +41,11 @@ class Constants(BaseConstants):
 class Subsession(BaseSubsession):
     def creating_session(self):
         for player in self.get_players():
-
             player.selected= random.choices(Constants.numberList, weights=(10,90), k=1)[0] #10,90
             self.session.vars["selected"] = player.selected
-            player.treatment = random.choice(["ButtonA", "ButtonB", "NoButton"])
-            player.participant.vars["treatment"] = player.treatment
-            #player.participant.vars["payoff2_self"] = ""
             player.participant.vars["payoff3"] = ""
-            #player.participant.vars["payoff2_charity"] = ""
-            #player.participant.vars["payoff2_self_danat"] = ""
-            #player.participant.vars["payoff2_charity_danat"] = ""
             player.participant.vars["bonus"] = ""
-            #player.participant.vars["danat"] = ""
-        #    player.participant.vars["too_long"] = False
+
 
 
 
@@ -62,7 +54,6 @@ class Group(BaseGroup):
 
 
 class Player(BasePlayer):
-    treatment = models.StringField()
     button = models.BooleanField(initial=0)
     bonus = models.FloatField()
     store_time = models.FloatField()  # for the timer
@@ -77,7 +68,7 @@ class Player(BasePlayer):
     secondary_button = models.StringField()
     payoff2_self_danat = models.IntegerField()  # payoff dana_timed
     payoff2_charity_danat = models.IntegerField()  # payoff dana_timed
-    #total_payoff = models.FloatField()
+
     # How strong was the temptation to press the button?
     q0 = models.IntegerField(label='How strong was the temptation to press the button? (0: not tempting at all, 10: very tempting) ', choices=[0,1, 2, 3, 4, 5, 6, 7, 8, 9,10],
         widget=widgets.RadioSelectHorizontal)
@@ -97,21 +88,21 @@ class Player(BasePlayer):
                                             blank=True)
 
     def set_payoffs(self):
-        if self.treatment == "ButtonA":
+        if  self.subsession.treatment == "ButtonA":
             if self.store_time != 0:
                 self.payoff2_self = Constants.optionB[0]
                 self.payoff2_charity = Constants.optionB[1]
             elif self.store_time == 0:
                 self.payoff2_self = Constants.optionA[0]
                 self.payoff2_charity = Constants.optionA[1]
-        elif self.treatment == "ButtonB":
+        elif self.subsession.treatment == "ButtonB":
             if self.store_time != 0:
                 self.payoff2_self = Constants.optionA[0]
                 self.payoff2_charity = Constants.optionA[1]
             else: #not pressing the button yields the selfish action
                 self.payoff2_self = Constants.optionA[0]
                 self.payoff2_charity = Constants.optionA[1]
-        elif self.treatment == "NoButton":
+        elif self.subsession.treatment == "NoButton":
             if self.secondary_button == "A":
                 self.payoff2_self_danat = 10
                 self.payoff2_charity_danat = 0
@@ -131,14 +122,14 @@ class Player(BasePlayer):
     def set_payoff3(self):
         if self.selected == 1:
             if self.store_time != 0:
-                if self.treatment == "ButtonA":  #treatment A and press
+                if self.subsession.treatment == "ButtonA":  #treatment A and press
                     if self.q_number == 100:
                         self.payoff3 = 10.5
                         self.payoff4 = self.payoff3 + float(self.participant.vars["payoff_svo"])
                     elif self.q_number != 100:
                         self.payoff3 = 10
                         self.payoff4 = self.payoff3 + float(self.participant.vars["payoff_svo"])
-                elif self.treatment == "ButtonB":  # treatment B and press
+                elif self.subsession.treatment == "ButtonB":  # treatment B and press
                     if self.q_number == 100:
                         self.payoff3 = 5.5
                         self.payoff4 = self.payoff3 + float(self.participant.vars["payoff_svo"])
@@ -146,14 +137,14 @@ class Player(BasePlayer):
                         self.payoff3=5
                         self.payoff4 = self.payoff3+ float(self.participant.vars["payoff_svo"])
             else: #button not pressed
-                if self.treatment == "ButtonA": #treatment A and not press
+                if self.subsession.treatment == "ButtonA": #treatment A and not press
                     if self.q_number == 100:
                         self.payoff3 = 5.5
                         self.payoff4 = self.payoff3 + float(self.participant.vars["payoff_svo"])
                     elif self.q_number != 100:
                         self.payoff3 = 5
                         self.payoff4 = self.payoff3+ float(self.participant.vars["payoff_svo"])
-                elif self.treatment == "ButtonB":  # treatment B and  not press
+                elif self.subsession.treatment == "ButtonB":  # treatment B and  not press
                     if self.q_number == 100:
                         self.payoff3 = 10.5
                         self.payoff4  = self.payoff3+ float(self.participant.vars["payoff_svo"])
@@ -162,14 +153,14 @@ class Player(BasePlayer):
                         self.payoff4 = self.payoff3+float(self.participant.vars["payoff_svo"])
         elif self.selected == 0:
             if self.store_time != 0:
-                if self.treatment == "ButtonA": # treatment A and press
+                if self.subsession.treatment == "ButtonA": # treatment A and press
                     if self.q_number == 100:
                         self.payoff3 = 0.5
                         self.payoff4 = self.payoff3 + float(self.participant.vars["payoff_svo"])
                     elif self.q_number != 100:
                         self.payoff3 = 0
                         self.payoff4 = self.payoff3 + float(self.participant.vars["payoff_svo"])
-                elif self.treatment == "ButtonB":  # treatment B and press
+                elif self.subsession.treatment == "ButtonB":  # treatment B and press
                     if self.q_number == 100:
                         self.payoff3 = 0.5
                         self.payoff4 = self.payoff3 + float(self.participant.vars["payoff_svo"])
@@ -177,14 +168,14 @@ class Player(BasePlayer):
                         self.payoff3 = 0
                         self.payoff4 = self.payoff3 + float(self.participant.vars["payoff_svo"])
             else:
-                if self.treatment == "ButtonA": # treatment A and not press
+                if self.subsession.treatment == "ButtonA": # treatment A and not press
                     if self.q_number == 100:
                         self.payoff3 = 0.5
                         self.payoff4 = self.payoff3 + float(self.participant.vars["payoff_svo"])
                     elif self.q_number != 100:
                         self.payoff3 = 0
                         self.payoff4 = self.payoff3 + float(self.participant.vars["payoff_svo"])
-                elif self.treatment == "ButtonB":  # treatment B and  not press
+                elif self.subsession.treatment == "ButtonB":  # treatment B and  not press
                     if self.q_number == 100:
                         self.payoff3 = 0.5
                         self.payoff4 = self.payoff3 + float(self.participant.vars["payoff_svo"])
@@ -193,7 +184,7 @@ class Player(BasePlayer):
                         self.payoff4 = self.payoff3 + float(self.participant.vars["payoff_svo"])
 
     def set_payoffsdanat(self):
-        if self.treatment == "NoButton":
+        if self.subsession.treatment == "NoButton":
             if self.selected ==1:
                 if self.secondary_button == "A":
                     if self.q_number == 100:

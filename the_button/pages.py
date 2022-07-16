@@ -7,14 +7,13 @@ from .models import Player
 
 def vars_for_all_templates(self):
     return {
-        'treatment': self.participant.vars["treatment"],
+        'treatment': self.session.vars["treatment"],
         'selected':  self.session.vars["selected"]}
 
 
 class SummaryTask1_(Page):
     def is_displayed(self):
-        player = self.player
-        return player.treatment == "ButtonA" or player.treatment == "ButtonB"
+        return self.subsession.treatment == "ButtonA" or self.subsession.treatment == "ButtonB"
 
 
 class SummaryTask1_danat(Page):
@@ -31,8 +30,7 @@ class Button(Page):
     timeout_seconds = Constants.timer
 
     def is_displayed(self):
-        player = self.player
-        return player.treatment == "ButtonA" or player.treatment == "ButtonB"
+        return self.subsession.treatment == "ButtonA" or self.subsession.treatment == "ButtonB"
 
 #class ButtonClicked(Page):
     #   form_model = 'player'
@@ -69,15 +67,15 @@ class task_timed(Page):
 
     def is_displayed(self):
         player = self.player
-        return player.treatment == "NoButton"
+        return self.subsession.treatment == "NoButton"
 
 class Error(Page):
     form_model = 'player'
     form_fields = [ 'store_time', 'store_timeB',"secondary_button"]  # 'store_time'
 
     def is_displayed(self):
-        player = self.player
-        return player.treatment == "NoButton" and player.secondary_button == ""
+        player=self.player
+        return self.subsession.treatment == "NoButton" and player.secondary_button == ""
 
     def error_message(self, values):
         if self.player.secondary_button == "":
@@ -107,9 +105,9 @@ class Payment(Page):
             payoff2_self=self.player.payoff2_self,
             payoff2_self_danat=self.player.payoff2_self_danat,
             bonus= self.player.bonus,
-            payoff3= self.player.payoff3,
+            payoff3 = self.player.payoff3,
             payoff4 = self.player.payoff4,
-            treatment = self.player.treatment,
+            treatment = self.subsession.treatment,
 
         )
     def js_vars(self):
@@ -141,11 +139,11 @@ class Survey(Page):
                     store_time = self.player.store_time)
 
     def is_displayed(self):
-        player = self.player
-        return player.treatment == "ButtonA" or player.treatment == "ButtonB"
+
+        return self.subsession.treatment== "ButtonA" or self.subsession.treatment == "ButtonB"
 
     def get_form_fields(self):
-        if self.player.treatment == "ButtonA":
+        if self.subsession.treatment == "ButtonA":
             #selfish button pressed but altruistic dana (altruistic-selfish)
             if self.player.store_time != 0 and self.participant.vars["payoff1_self"]  == 5:
                 return ['q0', 'q1','q_change']
@@ -158,7 +156,7 @@ class Survey(Page):
             # selfish button not pressed and altruistic dana (altruistic-altruistic)
             elif self.player.store_time == 0 and self.participant.vars["payoff1_self"] == 5:
                 return ['q0','q2','q_nochange']
-        if self.player.treatment == "ButtonB":
+        if self.subsession.treatment == "ButtonB":
             #altruistic button pressed and altruistic dana (altruistic-altruistic)
             if self.player.store_time != 0 and self.participant.vars["payoff1_self"]  == 5:
                 return ['q0', 'q1',  'q_nochange']
@@ -194,8 +192,8 @@ class Survey_danat(Page):
 
 
     def is_displayed(self):
-        player = self.player
-        return player.treatment == "NoButton"
+
+        return self.subsession.treatment == "NoButton"
 
     def before_next_page(self):
         self.player.set_bonus()
